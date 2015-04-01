@@ -19,75 +19,57 @@
 */
 
 #include "Main.h"
-#include "Thread.h"
+#include "XyzWriter.h"
+#include "Camera.h"
 
 namespace freelss
 {
 
-// The threaded function
-static void * G_Thread_ThreadFunc ( void *ptr )
+void XyzWriter::write(const std::string& baseFilename, const std::vector<NeutralFileRecord>& results)
 {
-	Thread * thread = reinterpret_cast<Thread *>(ptr);
+	std::string xyzFilename = baseFilename + ".xyz";
+	std::ofstream xyz (xyzFilename.c_str());
+	if (!xyz.is_open())
+	{
+		throw Exception("Error opening STL file for writing: " + xyzFilename);
+	}
+
+	uint32 maxNumRows = Camera::getInstance()->getImageHeight(); // TODO: Make this use the image height that generated the result and not the current Camera
+	uint32 numRowBins = 400; // TODO: Autodetect this or have it in Database
 
 	try
 	{
-		thread->run();
-	}
-	catch (freelss::Exception& ex)
-	{
-		std::cerr << "Exception thrown: " << ex << std::endl;
+		int iFrame = 0;
+
+		std::vector<NeutralFileRecord> frameA;
+		std::vector<NeutralFileRecord> currentFrame;
+
+		size_t resultIndex = 0;
+		while (NeutralFileRecord::readNextFrame(frameA, results, resultIndex))
+		{
+			// Reduce the number of result rows and filter out some of the noise
+			NeutralFileRecord::lowpassFilter(currentFrame, frameA, maxNumRows, numRowBins);
+
+			// Write the filtered results to the XYZ file
+			for (size_t iRec = 0; iRec < currentFrame.size(); iRec++)
+			{
+				const NeutralFileRecord& rec = currentFrame[iRec];
+				const ColoredPoint & pt = rec.point;
+
+				xyz << pt.x        << " " << pt.y        << " " << pt.z        << " "
+				    << pt.normal.x << " " << pt.normal.y << " " << pt.normal.z
+				    << std::endl;
+			}
+		}
 	}
 	catch (...)
 	{
-		std::cerr << "Unknown Exception Thrown" << std::endl;
+		xyz.close();
+		throw;
 	}
-	
-	return NULL;
+
+	xyz.close();
 }
 
-Thread::Thread() : 	
-	m_stopRequested(false),
-	m_handle()	
-{
-	// Do nothing
-}
 
-Thread::~Thread()
-{
-	// Do nothing
-}
-
-void Thread::execute()
-{
-	m_stopRequested = false;
-
-	if (pthread_create(&m_handle, NULL, G_Thread_ThreadFunc, (void*) this) != 0)
-	{
-		throw Exception("Error creating thread");
-	}
-}
-
-void Thread::join()
-{
-	if (pthread_join(m_handle, NULL) != 0)
-	{
-		throw Exception("Error joining thread");
-	}
-}
-
-void Thread::stop()
-{
-	m_stopRequested = true;
-}
-
-void Thread::usleep(unsigned long microseconds)
-{
-	if (::usleep(microseconds) != 0)
-	{
-		std::stringstream sstr;
-		sstr << "Error sleeping thread, errno=" << errno;
-		std::cerr << sstr.str() << std::endl;
-	}
-}
-
-}
+} // ns freelss

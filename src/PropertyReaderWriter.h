@@ -1,6 +1,6 @@
 /*
  ****************************************************************************
- *  Copyright (c) 2014 Uriah Liggett <freelaserscanner@gmail.com>           *
+ *  Copyright (c) 2015 Uriah Liggett <freelaserscanner@gmail.com>           *
  *	This file is part of FreeLSS.                                           *
  *                                                                          *
  *  FreeLSS is free software: you can redistribute it and/or modify         *
@@ -23,41 +23,18 @@
 namespace freelss
 {
 
-/** Interface for laser control */
-class Laser
+/**
+ * Reads and writes properties to a file.
+ */
+class PropertyReaderWriter
 {
 public:
 
-	/** Represents one of the available lasers */
-	enum LaserSide { LEFT_LASER, RIGHT_LASER, ALL_LASERS };
+	/** Reads the properties from the given properties file */
+	static std::vector<Property> readProperties(const std::string& filename);
 
-	/** Returns the singleton instance */
-	static Laser * getInstance();
-
-	/** Releases the singleton instance */
-	static void release();
-
-	/** Returns the string representation of the laser side */
-	static std::string toString(Laser::LaserSide side);
-
-	virtual ~Laser();
-
-	/** Turns the laser on */
-	virtual void turnOn(Laser::LaserSide laser) = 0;
-
-	/** Turns the laser off */
-	virtual void turnOff(Laser::LaserSide laser) = 0;
-
-	/** Returns true if the given laser is on */
-	virtual bool isOn(Laser::LaserSide laser) = 0;
-
-protected:
-
-	Laser();
-
-private:
-	/** The singleton instance */
-	static Laser * m_instance;
+	/** Writes the given properties to the given file */
+	static void writeProperties(const std::vector<Property>& properties, const std::string& filename);
 };
 
 }

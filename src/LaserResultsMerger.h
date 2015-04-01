@@ -20,44 +20,37 @@
 
 #pragma once
 
+#include "Preset.h"
+
 namespace freelss
 {
 
-/** Interface for laser control */
-class Laser
+/**
+ * This class merges the left and right laser results into a single result set.
+ * It uses the results from the left laser in places where the right laser does
+ * not have information.  It utilizes a volumetric masking technique to determine
+ * if the right laser already has information in a given area.
+ */
+class LaserResultsMerger
 {
 public:
+	LaserResultsMerger();
 
-	/** Represents one of the available lasers */
-	enum LaserSide { LEFT_LASER, RIGHT_LASER, ALL_LASERS };
-
-	/** Returns the singleton instance */
-	static Laser * getInstance();
-
-	/** Releases the singleton instance */
-	static void release();
-
-	/** Returns the string representation of the laser side */
-	static std::string toString(Laser::LaserSide side);
-
-	virtual ~Laser();
-
-	/** Turns the laser on */
-	virtual void turnOn(Laser::LaserSide laser) = 0;
-
-	/** Turns the laser off */
-	virtual void turnOff(Laser::LaserSide laser) = 0;
-
-	/** Returns true if the given laser is on */
-	virtual bool isOn(Laser::LaserSide laser) = 0;
-
-protected:
-
-	Laser();
+	void merge(std::vector<NeutralFileRecord> & out,
+            std::vector<NeutralFileRecord> & leftLaserResults,
+            std::vector<NeutralFileRecord> & rightLaserResults,
+            int numFramesPerRevolution,
+            int numFramesBetweenLaserPlanes,
+            int maxPointY,
+            Preset::LaserMergeAction mergeAction);
 
 private:
-	/** The singleton instance */
-	static Laser * m_instance;
+
+	int getIndex(const NeutralFileRecord& record);
+
+	int m_numFramesBetweenLaserPlanes;
+	real m_numFramesPerRevolution;
+	real m_maxPointY;
 };
 
 }

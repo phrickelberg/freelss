@@ -1,6 +1,6 @@
 /*
  ****************************************************************************
- *  Copyright (c) 2014 Uriah Liggett <freelaserscanner@gmail.com>           *
+ *  Copyright (c) 2015 Uriah Liggett <freelaserscanner@gmail.com>           *
  *	This file is part of FreeLSS.                                           *
  *                                                                          *
  *  FreeLSS is free software: you can redistribute it and/or modify         *
@@ -20,39 +20,69 @@
 
 #pragma once
 
+#include "CriticalSection.h"
+
 namespace freelss
 {
 
 /**
- * This class controls the motor that rotates the turn table.
+ * This class handles the downloading and applying of updates.
  */
-class TurnTable
+class UpdateManager
 {
 public:
 
 	/** Returns the singleton instance */
-	static TurnTable * getInstance();
+	static UpdateManager * get();
 
 	/** Releases the singleton instance */
 	static void release();
 
-	/** Destructor */
-	virtual ~TurnTable();
+	/** Returns info about the latest software update.  Ownership of returned is transferred to caller. */
+	SoftwareUpdate * getLatestUpdate();
 
-	/** Rotates this amount in radians.  Returns the number of steps taken. */
-	virtual int rotate(real theta) = 0;
+	/** Checks for updates */
+	void checkForUpdates();
 
-	/** Enable/Disable the stepper motor */
-	virtual void setMotorEnabled(bool enabled) = 0;
+	/** Applies the given software update */
+	void applyUpdate(SoftwareUpdate * update);
 
 protected:
 
 	/** Default Constructor */
-	TurnTable();
+	UpdateManager();
 
 private:
+
+	/** Downloads the file to the given destination */
+	void downloadFile(const std::string& url,
+			          const std::string& destination,
+					  const std::string& postData = "");
+
+	/** Downloads the file to the given destination */
+	void downloadUpdate(const std::string& url,
+			            const std::string& destination,
+			            const std::string& serialNumber,
+			            int majorVersion,
+			            int minorVersion);
+
+	/** Reads the updates from the given update file */
+	std::vector<SoftwareUpdate> readUpdates(const std::string& filename);
+
 	/** Singleton instance */
-	static TurnTable * m_instance;
+	static UpdateManager * m_instance;
+
+	/** The url to check for updates */
+	static const std::string UPDATE_URL;
+
+	/** The directory where updates are temporarily stored */
+	static const std::string UPDATE_DIR;
+
+	/** The critical section for this instance */
+	CriticalSection m_cs;
+
+	/** The updates */
+	std::vector<SoftwareUpdate> m_updates;
 };
 
 }

@@ -1,6 +1,6 @@
 /*
  ****************************************************************************
- *  Copyright (c) 2014 Uriah Liggett <hairu526@gmail.com>                   *
+ *  Copyright (c) 2014 Uriah Liggett <freelaserscanner@gmail.com>           *
  *	This file is part of FreeLSS.                                           *
  *                                                                          *
  *  FreeLSS is free software: you can redistribute it and/or modify         *
@@ -57,6 +57,7 @@ The origin is the center of the turn table.
 #include <iostream>
 #include <fstream>
 #include <exception>
+#include <memory>
 #include <math.h>
 #include <pthread.h>
 #include <list>
@@ -80,19 +81,15 @@ The origin is the center of the turn table.
 #include <sys/stat.h>
 
 // Non-configurable settings
+#define FREELSS_VERSION_MAJOR 1
+#define FREELSS_VERSION_MINOR 2
+#define FREELSS_VERSION_NAME "FreeLSS 1.2"
+
 #define PI 3.14159265359
 
 #define RADIANS_TO_DEGREES(r) ((r / (2 * PI)) * 360)
 #define DEGREES_TO_RADIANS(d) ((d / 360.0) * (2 * PI))
 #define ROUND(d)((int)(d + 0.5))
-/*
-#define CAMERA_IMAGE_HEIGHT 1944
-#define CAMERA_IMAGE_WIDTH 2592
-#define CAMERA_IMAGE_COMPONENTS 3         // RGB
-#define CAMERA_SENSOR_WIDTH 3.629
-#define CAMERA_SENSOR_HEIGHT 2.722        // http://elinux.org/Rpi_Camera_Module reports it as 3.67 x 2.74 mm
-#define CAMERA_FOCAL_LENGTH 3.6
-*/
 
 #define ABS(a)	   (((a) < 0) ? -(a) : (a))
 
@@ -112,7 +109,7 @@ The origin is the center of the turn table.
 #define MAX3(a, b, c) (MAX(MIN(a, b), c))
 #endif
 
-namespace scanner
+namespace freelss
 {
 
 typedef std::string Exception;
@@ -122,6 +119,27 @@ typedef unsigned short uint16;
 typedef float real32;
 typedef double real64;
 typedef float real;
+
+/** The directory where scans are written to */
+extern const std::string SCAN_OUTPUT_DIR;
+
+/** The directory where debug images are written to */
+extern const std::string DEBUG_OUTPUT_DIR;
+
+/** The filename where the properties are stored */
+extern const std::string PROPERTIES_FILE;
+
+/**
+ * Defines a name/value pair.
+ */
+struct Property
+{
+	Property() : name(""), value("") { }
+	Property(const std::string& name, const std::string& value) : name(name), value(value) { }
+
+	std::string name;
+	std::string value;
+};
 
 /** 
  * 2D Pixel Location.  
@@ -193,12 +211,27 @@ struct Ray
 
 struct NeutralFileRecord
 {
+	/** Populates frameC with the next frame from the results vector starting at index resultIndex */
+	static bool readNextFrame(std::vector<NeutralFileRecord>& out, const std::vector<NeutralFileRecord>& results, size_t & resultIndex);
+
+	/**
+	 * Reduce the number of result rows and filter out some of the noise
+	 * @param maxNumRows - The number of rows in the image the produced the frame.
+	 * @param numRowBins - The total number of row bins in the entire image, not necessarily what is returned by this function.
+	 */
+	static void lowpassFilter(std::vector<NeutralFileRecord>& output, std::vector<NeutralFileRecord>& frame, unsigned maxNumRows, unsigned numRowBins);
+
+	/**
+	 * Computes the average of all the records in the bin.
+	 */
+	static void computeAverage(const std::vector<NeutralFileRecord>& bin, NeutralFileRecord& out);
+
 	PixelLocation pixel;
 	ColoredPoint point;
 	real rotation;
-	int step;
+	int frame;
 	int laserSide;
-	int pseudoStep;
+	int pseudoFrame;
 };
 
 struct ScanResultFile
@@ -214,8 +247,34 @@ struct ScanResult
 	std::vector<ScanResultFile> files;
 };
 
+struct SoftwareUpdate
+{
+	std::string name;
+	std::string description;
+	std::string url;
+	std::string releaseDate;
+	int majorVersion;
+	int minorVersion;
+};
+
+/** Units of length */
+enum UnitOfLength { UL_UNKNOWN, UL_MILLIMETERS, UL_INCHES };
+
 /** Returns the current point in time in ms */
 double GetTimeInSeconds();
+
+real ConvertUnitOfLength(real value, UnitOfLength valueUnits, UnitOfLength destinationUnits);
+std::string ToString(UnitOfLength unit);
+std::string ToString(real value);
+std::string ToString(int value);
+std::string ToString(bool value);
+real ToReal(const std::string& str);
+int ToInt(const std::string& str);
+bool ToBool(const std::string& str);
+bool EndsWith(const std::string& str, const std::string& ending);
+void HtmlEncode(std::string& data);
+void LoadProperties();
+void SaveProperties();
 }
 
 // Forward declaration

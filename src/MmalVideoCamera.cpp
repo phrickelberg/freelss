@@ -1,6 +1,6 @@
 /*
  ****************************************************************************
- *  Copyright (c) 2014 Uriah Liggett <hairu526@gmail.com>                   *
+ *  Copyright (c) 2014 Uriah Liggett <freelaserscanner@gmail.com>           *
  *	This file is part of FreeLSS.                                           *
  *                                                                          *
  *  FreeLSS is free software: you can redistribute it and/or modify         *
@@ -43,7 +43,7 @@
 #define CAMERA_IMAGE_WIDTH 1280
 #define CAMERA_IMAGE_HEIGHT 960
 
-namespace scanner
+namespace freelss
 {
 
 struct Mmal_CallbackData

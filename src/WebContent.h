@@ -1,6 +1,6 @@
 /*
  ****************************************************************************
- *  Copyright (c) 2014 Uriah Liggett <hairu526@gmail.com>                   *
+ *  Copyright (c) 2014 Uriah Liggett <freelaserscanner@gmail.com>           *
  *	This file is part of FreeLSS.                                           *
  *                                                                          *
  *  FreeLSS is free software: you can redistribute it and/or modify         *
@@ -21,7 +21,7 @@
 #pragma once
 
 
-namespace scanner
+namespace freelss
 {
 
 class WebContent
@@ -38,8 +38,48 @@ public:
 
 	static std::string scan(const std::vector<ScanResult>& pastScans);
 	static std::string scanRunning(real progress, real remainingTime);
-	static std::string cal1();
-	static std::string settings(const std::string& message, const std::string& rotationDegrees);
+	static std::string cal1(const std::string& message);
+	static std::string settings(const std::string& message);
+	static std::string setup(const std::string& message);
+	static std::string showUpdate(SoftwareUpdate * update, const std::string& message);
+	static std::string updateApplied(SoftwareUpdate * update, const std::string& message, bool success);
+
+	static const std::string PROFILE_NAME;
+	static const std::string SERIAL_NUMBER;
+	static const std::string CAMERA_X;
+	static const std::string CAMERA_Y;
+	static const std::string CAMERA_Z;
+	static const std::string CAMERA_MODE;
+	static const std::string RIGHT_LASER_X;
+	static const std::string RIGHT_LASER_Y;
+	static const std::string RIGHT_LASER_Z;
+	static const std::string RIGHT_LASER_PIN;
+	static const std::string LEFT_LASER_X;
+	static const std::string LEFT_LASER_Y;
+	static const std::string LEFT_LASER_Z;
+	static const std::string LEFT_LASER_PIN;
+	static const std::string LASER_MAGNITUDE_THRESHOLD;
+	static const std::string LASER_DELAY;
+	static const std::string LASER_ON_VALUE;
+	static const std::string LASER_SELECTION;
+	static const std::string STABILITY_DELAY;
+	static const std::string MAX_LASER_WIDTH;
+	static const std::string MIN_LASER_WIDTH;
+	static const std::string STEPS_PER_REVOLUTION;
+	static const std::string ENABLE_PIN;
+	static const std::string STEP_PIN;
+	static const std::string DIRECTION_PIN;
+	static const std::string DIRECTION_VALUE;
+	static const std::string RESPONSE_DELAY;
+	static const std::string STEP_DELAY;
+	static const std::string FRAMES_PER_REVOLUTION;
+	static const std::string GENERATE_XYZ;
+	static const std::string GENERATE_STL;
+	static const std::string GENERATE_PLY;
+	static const std::string SEPARATE_LASERS_BY_COLOR;
+	static const std::string UNIT_OF_LENGTH;
+	static const std::string VERSION_NAME;
+
 private:
 	static std::string setting(const std::string& name, const std::string& label,
 			const std::string& value, const std::string& description, const std::string& units = "", bool readOnly = false);
@@ -50,10 +90,13 @@ private:
 	static std::string setting(const std::string& name, const std::string& label,
 			real value, const std::string& description, const std::string& units = "", bool readOnly = false);
 
+	static std::string checkbox(const std::string& name, const std::string& label, bool checked, const std::string& description);
+
 	static std::string scanResult(size_t index, const ScanResult& result);
 
 	static const std::string CSS;
 	static const std::string JAVASCRIPT;
+	static const std::string SERIAL_NUMBER_DESCR;
 	static const std::string CAMERA_X_DESCR;
 	static const std::string CAMERA_Y_DESCR;
 	static const std::string CAMERA_Z_DESCR;
@@ -77,6 +120,11 @@ private:
 	static const std::string STEP_DELAY_DESCR;
 	static const std::string DIRECTION_PIN_DESCR;
 	static const std::string RESPONSE_DELAY_DESCR;
+	static const std::string FRAMES_PER_REVOLUTION_DESCR;
+	static const std::string GENERATE_XYZ_DESCR;
+	static const std::string GENERATE_STL_DESCR;
+	static const std::string GENERATE_PLY_DESCR;
+	static const std::string SEPARATE_LASERS_BY_COLOR_DESCR;
 };
 
 }

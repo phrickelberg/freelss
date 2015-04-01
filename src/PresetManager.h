@@ -1,6 +1,6 @@
 /*
  ****************************************************************************
- *  Copyright (c) 2014 Uriah Liggett <freelaserscanner@gmail.com>           *
+ *  Copyright (c) 2015 Uriah Liggett <freelaserscanner@gmail.com>           *
  *	This file is part of FreeLSS.                                           *
  *                                                                          *
  *  FreeLSS is free software: you can redistribute it and/or modify         *
@@ -20,44 +20,56 @@
 
 #pragma once
 
+#include "Preset.h"
+
 namespace freelss
 {
 
-/** Interface for laser control */
-class Laser
+/**
+ * Manages access to the Preset instances.
+ */
+class PresetManager
 {
 public:
 
-	/** Represents one of the available lasers */
-	enum LaserSide { LEFT_LASER, RIGHT_LASER, ALL_LASERS };
-
-	/** Returns the singleton instance */
-	static Laser * getInstance();
-
-	/** Releases the singleton instance */
+	static PresetManager * get();
 	static void release();
 
-	/** Returns the string representation of the laser side */
-	static std::string toString(Laser::LaserSide side);
+	/** Returns the preset that is currently active */
+	Preset& getActivePreset();
 
-	virtual ~Laser();
+	/** Sets the given preset as the active preset */
+	void setActivePreset(int presetId);
 
-	/** Turns the laser on */
-	virtual void turnOn(Laser::LaserSide laser) = 0;
+	/** Removes the active preset */
+	void removeActivePreset();
 
-	/** Turns the laser off */
-	virtual void turnOff(Laser::LaserSide laser) = 0;
+	/** Returns the presets */
+	const std::vector<Preset>& getPresets();
 
-	/** Returns true if the given laser is on */
-	virtual bool isOn(Laser::LaserSide laser) = 0;
+	/** Adds the preset */
+	int addPreset(const Preset& preset);
 
-protected:
+	/** Encodes property information to the properties vector */
+	void encodeProperties(std::vector<Property>& properties);
 
-	Laser();
+	/** Decodes property information from the given vector  */
+	void decodeProperties(const std::vector<Property>& properties);
 
 private:
-	/** The singleton instance */
-	static Laser * m_instance;
+
+	PresetManager();
+
+	static PresetManager * m_instance;
+
+	/** The Presets */
+	std::vector<Preset> m_presets;
+
+	/** The ID of the next preset */
+	int m_nextId;
+
+	/** The index of the preset that is currently active */
+	int m_activePresetIndex;
 };
 
 }

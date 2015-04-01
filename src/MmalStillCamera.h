@@ -1,6 +1,6 @@
 /*
  ****************************************************************************
- *  Copyright (c) 2014 Uriah Liggett <hairu526@gmail.com>                   *
+ *  Copyright (c) 2014 Uriah Liggett <freelaserscanner@gmail.com>           *
  *	This file is part of FreeLSS.                                           *
  *                                                                          *
  *  FreeLSS is free software: you can redistribute it and/or modify         *
@@ -27,7 +27,7 @@ struct MMAL_COMPONENT_T;
 struct MMAL_PORT_T;
 struct MMAL_POOL_T;
 
-namespace scanner
+namespace freelss
 {
 
 // Forward declaration

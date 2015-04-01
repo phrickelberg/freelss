@@ -1,6 +1,6 @@
 /*
  ****************************************************************************
- *  Copyright (c) 2014 Uriah Liggett <freelaserscanner@gmail.com>           *
+ *  Copyright (c) 2015 Uriah Liggett <freelaserscanner@gmail.com>           *
  *	This file is part of FreeLSS.                                           *
  *                                                                          *
  *  FreeLSS is free software: you can redistribute it and/or modify         *
@@ -17,47 +17,56 @@
  *   along with FreeLSS.  If not, see <http://www.gnu.org/licenses/>.       *
  ****************************************************************************
 */
+#include "Main.h"
+#include "PropertyReaderWriter.h"
 
-#pragma once
 
 namespace freelss
 {
 
-/** Interface for laser control */
-class Laser
+std::vector<Property> PropertyReaderWriter::readProperties(const std::string& filename)
 {
-public:
+	std::cout << "Reading properties file: " << filename << std::endl;
 
-	/** Represents one of the available lasers */
-	enum LaserSide { LEFT_LASER, RIGHT_LASER, ALL_LASERS };
+	std::vector<Property> properties;
 
-	/** Returns the singleton instance */
-	static Laser * getInstance();
+	std::ifstream fin (filename.c_str());
+	if (fin.is_open() == false)
+	{
+		throw Exception("Error opening properties file for reading: " + filename);
+	}
 
-	/** Releases the singleton instance */
-	static void release();
 
-	/** Returns the string representation of the laser side */
-	static std::string toString(Laser::LaserSide side);
+	std::string line;
+	while (std::getline(fin, line))
+	{
+		size_t delimPos = line.find("=");
+		if (delimPos != std::string::npos && delimPos < line.size() - 1 && delimPos > 0)
+		{
+			Property property;
+			property.name = line.substr(0, delimPos);
+			property.value = line.substr(delimPos + 1);
+			properties.push_back(property);
+		}
+	}
 
-	virtual ~Laser();
-
-	/** Turns the laser on */
-	virtual void turnOn(Laser::LaserSide laser) = 0;
-
-	/** Turns the laser off */
-	virtual void turnOff(Laser::LaserSide laser) = 0;
-
-	/** Returns true if the given laser is on */
-	virtual bool isOn(Laser::LaserSide laser) = 0;
-
-protected:
-
-	Laser();
-
-private:
-	/** The singleton instance */
-	static Laser * m_instance;
-};
-
+	return properties;
 }
+
+
+void PropertyReaderWriter::writeProperties(const std::vector<Property>& properties, const std::string& filename)
+{
+	std::ofstream fout (filename.c_str());
+	if (fout.is_open() == false)
+	{
+		throw Exception("Error opening properties file for writing: " + filename);
+	}
+
+	for (size_t iProp = 0; iProp < properties.size(); iProp++)
+	{
+		const Property& prop = properties[iProp];
+		fout << prop.name << "=" << prop.value << std::endl;
+	}
+}
+
+} // end ns
